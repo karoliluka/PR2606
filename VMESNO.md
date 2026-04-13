@@ -53,6 +53,8 @@ plt.tight_layout()
 plt.show()
 ```
 
+![Mediana cene po mestih s stevilom transakcij](img/mediana_mest_s_transakcijami.png)
+
 Cene so med 2015 in 2024 narastle za **~100–150 %**, pri čemer Ljubljana izstopa z rastjo **~170 %**. Obseg transakcij je dosegel vrh leta 2017 (8.058 poslov), nato pa padel na 5.666 v 2024 (–30 %). Opazujemo dve ključni diskontinuiteti:
 
 - **2020:** COVID-19 je povzročil upad poslov za ~15 %, cene pa so ostale stabilne
