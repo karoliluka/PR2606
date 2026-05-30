@@ -39,7 +39,7 @@ Dodatno smo z metodo **IQR (5.–95. percentil)** znotraj posamezne občine, tip
 
 Slika 1 prikazuje gibanje nacionalne mediane cen stanovanj na kvadratni meter v obdobju 2015–2025, z označenimi ključnimi makroekonomskimi dogodki.
 
-![Slika 1: Časovnica cen stanovanj s ključnimi dogodki](img/uporabljene_v_porocilu/graf7_casovnica.png)
+![Slika 1: Časovnica cen stanovanj s ključnimi dogodki](img/uporabljeno_v_porocilu/graf7_casovnica.png)
 
 Med letoma 2015 in 2019 je rast cen sledila zmernemu, predvidljivemu trendu (~5–7 % letno), gnanemu z gospodarsko rastjo in nizkimi obrestnimi merami. **COVID-19 pandemija** je marca 2020 povzročila kratek upad poslov, ki pa mu je v drugi polovici leta sledilo izrazito pospeševanje rasti zaradi kombinacije nizkih obrestnih mer, povečane likvidnosti in spremenjenih bivanjskih preferenc.
 
@@ -51,7 +51,7 @@ Drugi prelom se je zgodil **julija 2022**, ko je ECB začela cikel dvigov obrest
 
 Slika 2 prikazuje gibanje mediane €/m² po desetih največjih občinah, ločeno za stanovanja in hiše.
 
-![Slika 2: Gibanje mediane cen po občinah in tipu nepremičnine](img/uporabljene_v_porocilu/graf1_cene_trend.png)
+![Slika 2: Gibanje mediane cen po občinah in tipu nepremičnine](img/uporabljeno_v_porocilu/graf1_cene_trend.png)
 
 **Trije cenovni nivoji.** Ljubljana je v celotnem obdobju daleč najdražja — leta 2024 je mediana cene stanovanja dosegla **4.026 €/m²**. Sledijo ji občine v ljubljanskem zaledju in na obali (Koper, Domžale, Kranj, Kamnik) z medianami med **2.712 in 3.416 €/m²**. V tretji skupini so cenovno dostopnejše občine (Novo mesto, Celje, Maribor, Nova Gorica in Velenje) z medianami med **2.034 in 2.503 €/m²**. Razpon med najdražjo (Ljubljana) in najcenejšo občino (Velenje) je leta 2024 znašal skoraj **2.000 €/m²**.
 
@@ -63,7 +63,7 @@ Slika 2 prikazuje gibanje mediane €/m² po desetih največjih občinah, ločen
 
 Slika 3 prikazuje gibanje števila tržnih transakcij po desetih največjih občinah v obdobju 2015–2025.
 
-![Slika 3: Obseg nepremičninskega trga po občinah](img/uporabljene_v_porocilu/graf_obseg_trga.png)
+![Slika 3: Obseg nepremičninskega trga po občinah](img/uporabljeno_v_porocilu/graf_obseg_trga.png)
 
 **Ljubljana dominira tudi po številu poslov.** Skozi celotno opazovano obdobje je bilo v Ljubljani sklenjenih **23.642 tržnih poslov**, kar je več kot dvakrat toliko kot v Mariboru (11.660) in več kot v vseh ostalih osmih občinah skupaj.
 
@@ -75,7 +75,7 @@ Iz tega sledi naravno vprašanje: če cene rastejo in obroki rastejo, kakšna je
 
 Slika 4 prikazuje tri scenarije za nakup 60 m² stanovanja v vseh desetih obravnavanih občinah.
 
-![Slika 4: Dostopnost stanovanj v treh scenarijih](img/uporabljene_v_porocilu/graf4_dostopnost.png)
+![Slika 4: Dostopnost stanovanj v treh scenarijih](img/uporabljeno_v_porocilu/graf4_dostopnost.png)
 
 **Scenarij 1 (100 % plače).** V zelo nerealnem primeru, kjer bi posameznik vso neto plačo namenil za varčevanje, bi leta 2024 za 60 m² stanovanje v Ljubljani potreboval **12 let**, v Kopru 10,3, v Mariboru pa 6,4. Številke so nerealistično optimistične, vendar služijo kot teoretična spodnja meja.
 
@@ -87,7 +87,7 @@ Slika 4 prikazuje tri scenarije za nakup 60 m² stanovanja v vseh desetih obravn
 
 Za napovedovanje gibanja cen stanovanj na kvadratni meter med letoma 2026 in 2030 smo uporabili naprednejši algoritem **Prophet**, ki poleg samega zgodovinskega trenda upošteva še zunanje (eksogene) regresorje: napovedi obrestnih mer ECB, stopnje inflacije in rasti neto plač. Ker je prihodnost makroekonomije negotova, smo simulirali tri različne scenarije razvoja dogodkov, ki jih prikazuje Slika 5.
 
-![Slika 5: Napoved mediane cen/m² za stanovanja — 3 scenariji (2026–2030)](img/uporabljene_v_porocilu/graf5_napoved_prophet.png)
+![Slika 5: Napoved mediane cen/m² za stanovanja — 3 scenariji (2026–2030)](img/uporabljeno_v_porocilu/graf5_napoved_prophet.png)
 
 **1. Osnovna napoved (status quo - modra črta):** Ta scenarij predvideva stabilno nadaljevanje trenutnih trendov – postopno, umirjeno nižanje obrestnih mer ECB ter zmerno gospodarsko in plačno rast. Model v tem primeru napoveduje stabilno, a upočasnjeno rast cen. Mediana cen stanovanj v Sloveniji bi se iz trenutnih dobrih 3.200 €/m² do leta 2030 povzpela na približno **4.600 €/m²**.
 
@@ -104,3 +104,10 @@ Analiza več kot 81.000 podatkovnih zapisov Evidence trga nepremičnin (ETN) med
 *   **Geografska razslojenost se poglablja:** Razkorak med Ljubljano (kjer so cene presegle 4.000 €/m²) in regionalnimi središči (npr. Velenje ali Maribor) se je v zadnjem desetletju v absolutnem smislu podvojil. Ljubljana zaradi kapitalsko močnejših kupcev ostaja izjemno odporna na šoke, medtem ko so manjši trgi veliko bolj ranljivi.
 
 *   **Dostopnost je dosegla kritično točko:** Stanovanjska dostopnost za povprečnega zaposlenega posameznika je v Ljubljani brez pomoči zunanjih virov (partner, družina) postala teoretično skoraj nemogoča, saj bi hipotekarni obrok leta 2023 odnesel skoraj 80 % neto plače. Leto 2025 sicer nakazuje rahlo izboljšanje, a izračuni modela Prophet do leta 2030 opozarjajo, da bodo cene ob stabilnem makroekonomskem okolju še naprej rasle.
+
+### Člani skupine
+- Aleks Ašanin
+- Luka Karoli
+- Edis Mizić
+- Aljaž Smole
+- Matej Zaletelj
