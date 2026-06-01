@@ -1,9 +1,8 @@
 # Analiza slovenskega nepremičninskega trga (2015–2025)
 
 **Skupina 06**
-Povezava do aplikacije: [dodaj_streamlit.link]
-Povezava do lokalne namestitve in zahtev za aplikacijo: [dodaj_pot_do_app]
-
+Povezava do aplikacije: https://nepremicnine-slovenija-2015-2025.streamlit.app/
+Povezava do lokalne namestitve in zahtev za aplikacijo: https://github.com/karoliluka/PR2606/tree/main/real_estate_analysis
 
 ## 1. Uvod in problem
 
