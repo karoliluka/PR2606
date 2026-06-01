@@ -57,9 +57,8 @@ min_count = 1
 st.title("🗺️ Geografija cen nepremičnin — hexbin")
 
 st.info(
-    "👈 **Na levi strani** izberite občino, primerjalni način (dve občini), "
+    "**Na levi strani** izberite občino, primerjalni način (dve občini), "
     "leto, tip nepremičnine ter velikost in gostoto hexbinov.",
-    icon="ℹ️",
 )
 
 df_all = load_data()

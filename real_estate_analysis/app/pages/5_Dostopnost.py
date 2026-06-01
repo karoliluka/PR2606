@@ -45,8 +45,7 @@ def get_median(obcina, leto):
 st.title("💶 Dostopnost stanovanj — 3 scenariji")
 
 st.info(
-    "👈 **Na levi strani** izberite scenarij, občine in površino stanovanja ter primerjajte rezultate.",
-    icon="ℹ️",
+    "**Na levi strani** izberite scenarij, občine in površino stanovanja ter primerjajte rezultate.",
 )
 
 st.markdown("""
@@ -125,7 +124,7 @@ if compare_all:
 
 
 # --- Main scenario view ---
-st.subheader(f"📊 {scenarij}")
+st.subheader(scenarij)
 
 if "S1" in scenarij:
     st.info("""

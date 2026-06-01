@@ -16,9 +16,8 @@ st.title("🗓️ Letne spremembe cen (YoY heatmap)")
 st.caption("Sprememba mediane €/m² glede na predhodno leto, po občinah")
 
 st.info(
-    "👈 **Filtri** so dostopni v levem stranskem meniju — izberite tip nepremičnine "
+    "**Filtri** so dostopni v levem stranskem meniju — izberite tip nepremičnine "
     "(stanovanja, hiše ali obe skupaj).",
-    icon="ℹ️",
 )
 
 df = load_data()
@@ -108,8 +107,8 @@ else:
         min_val = vals[min_idx]
 
         col1, col2 = st.columns(2)
-        col1.success(f"📈 **Največja rast:** {max_obcina} v {max_leto}: **+{max_val:.1f}%**")
-        col2.error(f"📉 **Največji padec:** {min_obcina} v {min_leto}: **{min_val:.1f}%**")
+        col1.success(f"**Največja rast:** {max_obcina} v {max_leto}: **+{max_val:.1f}%**")
+        col2.error(f"**Največji padec:** {min_obcina} v {min_leto}: **{min_val:.1f}%**")
 
     # Average YoY by year (mini line chart)
     st.subheader("Povprečna YoY sprememba po letih (vse občine)")

@@ -239,7 +239,7 @@ st.latex(r"M = P \cdot \frac{r/12 \cdot (1 + r/12)^n}{(1 + r/12)^n - 1}")
 st.caption("P = glavnica (kredit), r = letna obrestna mera, n = število mesecev odplačevanja")
 
 st.warning("""
-⚠️ **Omejitve kalkulatorja:**
+**Omejitve kalkulatorja:**
 - Ne upošteva notarskih stroškov, davka na promet nepremičnin in agencijskih provizij (tipično +4–6 % cene)
 - Predpostavlja **fiksno** obrestno mero skozi celotno dobo kredita
 - Uporablja **nacionalno povprečje** plač — regionalne razlike so znatne

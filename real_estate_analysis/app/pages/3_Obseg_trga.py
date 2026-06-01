@@ -18,8 +18,7 @@ with st.sidebar:
 st.title("📈 Obseg trga — število transakcij")
 
 st.info(
-    "👈 **Na levi strani** lahko izberete občine in preklopite prikaz na transakcije na 1.000 prebivalcev.",
-    icon="ℹ️",
+    "**Na levi strani** lahko izberete občine in preklopite prikaz na transakcije na 1.000 prebivalcev.",
 )
 
 st.markdown(

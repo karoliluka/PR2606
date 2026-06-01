@@ -21,9 +21,8 @@ with st.sidebar:
 st.title("🏙️ Primerjava cen po top 10 občinah")
 
 st.info(
-    "👈 **Filtri** so dostopni v levem stranskem meniju — izberite tip nepremičnine, "
+    "**Filtri** so dostopni v levem stranskem meniju — izberite tip nepremičnine, "
     "določite občine za primerjavo ter preklopite med mediano in povprečjem.",
-    icon="ℹ️",
 )
 
 if not obcine_sel:

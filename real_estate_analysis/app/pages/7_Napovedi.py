@@ -22,17 +22,15 @@ with st.sidebar:
 st.title("🔮 Napoved cen nepremičnin 2026–2030")
 
 st.info(
-    "👈 **Filtri** so dostopni v levem stranskem meniju — izberite občino in tip nepremičnine, "
+    "**Filtri** so dostopni v levem stranskem meniju — izberite občino in tip nepremičnine, "
     "ter nastavite scenarij regresorjev: ECB obrestno mero, letno rast plač in inflacijo za obdobje 2025–2030.",
-    icon="ℹ️",
 )
 
 st.warning(
-    "⚠️ **Opozorilo:** Napoved nepremičninskih cen je notorično težka. "
+    "**Opozorilo:** Napoved nepremičninskih cen je notorično težka. "
     "To so ilustracije scenarijev, **ne predikcije**. "
     "Model je kalibriran na zgodovinskih podatkih in ne pozna bodočih šokov. "
     "Glej omejitve spodaj.",
-    icon="⚠️",
 )
 
 from sklearn.linear_model import Ridge
@@ -122,7 +120,26 @@ with st.spinner("Računam napoved..."):
 PROPHET_OK = True
 
 # --- Forecast chart ---
+# Bridge the last historical point into the forecast so lines connect visually
+last_ds = tdf["ds"].iloc[-1]
+last_y = tdf["y"].iloc[-1]
+
+fc_ds = pd.concat([pd.Series([last_ds]), forecast["ds"]], ignore_index=True)
+fc_yhat = pd.concat([pd.Series([last_y]), forecast["yhat"]], ignore_index=True)
+fc_upper = pd.concat([pd.Series([last_y]), forecast["yhat_upper"]], ignore_index=True)
+fc_lower = pd.concat([pd.Series([last_y]), forecast["yhat_lower"]], ignore_index=True)
+
 fig = go.Figure()
+
+fig.add_trace(go.Scatter(
+    x=pd.concat([fc_ds, fc_ds.iloc[::-1]]),
+    y=pd.concat([fc_upper, fc_lower.iloc[::-1]]),
+    fill="toself",
+    fillcolor="rgba(229,57,53,0.12)",
+    line=dict(color="rgba(0,0,0,0)"),
+    name="80% interval zaupanja",
+    hoverinfo="skip",
+))
 
 fig.add_trace(go.Scatter(
     x=tdf["ds"], y=tdf["y"],
@@ -133,17 +150,7 @@ fig.add_trace(go.Scatter(
 ))
 
 fig.add_trace(go.Scatter(
-    x=pd.concat([forecast["ds"], forecast["ds"].iloc[::-1]]),
-    y=pd.concat([forecast["yhat_upper"], forecast["yhat_lower"].iloc[::-1]]),
-    fill="toself",
-    fillcolor="rgba(31,58,95,0.15)",
-    line=dict(color="rgba(0,0,0,0)"),
-    name="80% interval zaupanja",
-    hoverinfo="skip",
-))
-
-fig.add_trace(go.Scatter(
-    x=forecast["ds"], y=forecast["yhat"],
+    x=fc_ds, y=fc_yhat,
     name=f"Napoved (ECB→{ecb_2030}%, plače+{wage_growth}%/leto, inflacija {inflacija}%)",
     line=dict(color="#E53935", width=3, dash="dash"),
     mode="lines+markers",
@@ -154,7 +161,8 @@ fig.add_trace(go.Scatter(
 val_2030 = forecast[forecast["year"] == 2030]["yhat"].values
 if len(val_2030):
     fig.add_annotation(
-        x="2030-07-01", y=val_2030[0],
+        x=forecast[forecast["year"] == 2030]["ds"].values[0],
+        y=val_2030[0],
         text=f"2030: €{val_2030[0]:,.0f}/m²",
         showarrow=True, arrowhead=2,
         bgcolor="rgba(255,255,255,0.9)",
