@@ -3,7 +3,7 @@
 **Predmet:** Podatkovno rudarjenje
 **Letnik:** 2025/26, FRI Ljubljana
 **Skupina:** 06
-- Povezava do aplikacije: https://nepremicnine-slovenija-2015-2025.streamlit.app/](https://nepremicnine-2015-2025.streamlit.app/
+- Povezava do aplikacije: https://nepremicnine-2015-2025.streamlit.app/
 
 ## Opis projekta
 
