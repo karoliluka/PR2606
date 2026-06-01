@@ -37,28 +37,50 @@ st.info(
 st.divider()
 st.subheader("Pregled vsebine")
 
+st.markdown("""
+<style>
+div[data-testid="stButton"] > button {
+    width: 100%;
+    margin-top: 0;
+    margin-bottom: 12px;
+    background: #1f3a5f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    padding: 6px 0;
+}
+div[data-testid="stButton"] > button:hover {
+    background: #2e5491;
+    color: white;
+}
+</style>
+""", unsafe_allow_html=True)
+
 cols = st.columns(4)
 nav_items = [
-    ("📊", "1 — Pregled", "Skupna časovnica, hero metrike, makroekonomski kontekst"),
-    ("🏙️", "2 — Top 10 občin", "Interaktivna primerjava trendov cen po občinah"),
-    ("📈", "3 — Obseg trga", "Število transakcij, intenziteta trga"),
-    ("🗓️", "4 — Letne spremembe", "Heatmap YoY sprememb cen"),
-    ("💶", "5 — Dostopnost", "3 scenariji hipotekarnega bremena"),
-    ("🗺️", "6 — Geografija", "Hexbin zemljevidi po občinah"),
-    ("🔮", "7 — Napovedi", "Prophet model 2026–2030"),
-    ("🧮", "8 — Kalkulator", "Personalizirani hipotekarni kalkulator"),
+    ("📊", "1 — Pregled", "Skupna časovnica, hero metrike, makroekonomski kontekst", "pages/1_Pregled.py"),
+    ("🏙️", "2 — Top 10 občin", "Interaktivna primerjava trendov cen po občinah", "pages/2_Top_obcine.py"),
+    ("📈", "3 — Obseg trga", "Število transakcij, intenziteta trga", "pages/3_Obseg_trga.py"),
+    ("🗓️", "4 — Letne spremembe", "Heatmap YoY sprememb cen", "pages/4_Letne_spremembe.py"),
+    ("💶", "5 — Dostopnost", "3 scenariji hipotekarnega bremena", "pages/5_Dostopnost.py"),
+    ("🗺️", "6 — Geografija", "Hexbin zemljevidi po občinah", "pages/6_Geografija_hexbin.py"),
+    ("🔮", "7 — Napovedi", "Prophet model 2026–2030", "pages/7_Napovedi.py"),
+    ("🧮", "8 — Kalkulator", "Personalizirani hipotekarni kalkulator", "pages/8_Kalkulator.py"),
 ]
 
-for i, (icon, title, desc) in enumerate(nav_items):
+for i, (icon, title, desc, page_path) in enumerate(nav_items):
     with cols[i % 4]:
         st.markdown(f"""
-        <div style="background:#f5f7fa;border-radius:10px;padding:16px;margin-bottom:12px;
+        <div style="background:#f5f7fa;border-radius:10px;padding:16px;margin-bottom:8px;
                     border-left:4px solid #1f3a5f;min-height:110px;">
             <div style="font-size:1.5rem">{icon}</div>
             <div style="font-weight:700;font-size:0.95rem;color:#1f3a5f">{title}</div>
             <div style="font-size:0.82rem;color:#555;margin-top:4px">{desc}</div>
         </div>
         """, unsafe_allow_html=True)
+        if st.button("Odpri →", key=page_path):
+            st.switch_page(page_path)
 
 st.divider()
 
