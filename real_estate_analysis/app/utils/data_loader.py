@@ -1,6 +1,11 @@
 import pandas as pd
 import numpy as np
 import streamlit as st
+from pathlib import Path
+
+# repo root = 3 levels up from this file (utils/ → app/ → real_estate_analysis/ → repo root)
+_REPO_ROOT = Path(__file__).parents[3]
+_DEFAULT_CSV = _REPO_ROOT / "vsi_bivanski.csv"
 
 OBCINE = [
     "LJUBLJANA", "MARIBOR", "CELJE", "KOPER", "KRANJ",
@@ -75,9 +80,10 @@ def klasificiraj_tip(raba: str) -> str:
 
 
 @st.cache_data
-def load_data(path: str = "data/raw/vsi_bivanski.csv") -> pd.DataFrame:
+def load_data(path: str = None) -> pd.DataFrame:
     """Load and clean ETN data with same filters as the team's analysis notebook."""
-    df = pd.read_csv(path, low_memory=False)
+    csv_path = Path(path) if path else _DEFAULT_CSV
+    df = pd.read_csv(csv_path, low_memory=False)
     df["TIP"]      = df["DEJANSKA_RABA_DELA_STAVBE"].apply(klasificiraj_tip)
     df["LETO"]     = df["LETO_x"]
     df["POVRSINA"] = df["POVRSINA_DELA_STAVBE"]
