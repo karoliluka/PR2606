@@ -1,6 +1,9 @@
 # Analiza slovenskega nepremičninskega trga (2015–2025)
 
-**Skupina 06** | Predmet: Podatkovno rudarjenje
+**Skupina 06**
+Povezava do aplikacije: [dodaj_streamlit.link]
+Povezava do lokalne namestitve in zahtev za aplikacijo: [dodaj_pot_do_app]
+
 
 ## 1. Uvod in problem
 
