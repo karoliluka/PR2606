@@ -252,64 +252,6 @@ else:  # S3
     )
     st.plotly_chart(fig, use_container_width=True)
 
-    # Decomposition: price vs rate effect for selected municipalities
-    st.subheader("Razdelitev rasti obroka 2015 → 2024: cene vs. obresti")
-    st.markdown(
-        "Graf prikazuje, za koliko € na mesec se je povečal hipotekarni obrok med letoma 2015 in 2024 "
-        "in kaj je k temu prispevalo: **rast cen nepremičnin** (modro), **dvig ECB obresti** (rdeče) "
-        "ter **interakcija** (oranžno) — del rasti, ki nastane, ker sta se *hkrati* dvignila tako cena "
-        "kot obrestna mera (ju ni mogoče pripisati samo enemu dejavniku)."
-    )
-
-    decomp_rows = []
-    for obcina in obcine_sel:
-        med15 = get_median(obcina, 2015)
-        med24 = get_median(obcina, 2024)
-        if pd.isna(med15) or pd.isna(med24):
-            continue
-        rate15 = ecb.get(2015, 0.05) + BANK_MARGIN
-        rate24 = ecb.get(2024, 3.65) + BANK_MARGIN
-        dec = price_growth_decomposition(
-            med15 * povrsina, med24 * povrsina, rate15, rate24, years=20, polog_pct=0.20
-        )
-        decomp_rows.append({
-            "obcina": obcina,
-            "Rast cen (€/mes)": dec["price_contribution"],
-            "Rast obresti (€/mes)": dec["rate_contribution"],
-            "Interakcija (€/mes)": dec["interaction"],
-        })
-
-    if decomp_rows:
-        df_dec = pd.DataFrame(decomp_rows)
-        fig_dec = go.Figure()
-        fig_dec.add_trace(go.Bar(
-            x=[o.title() for o in df_dec["obcina"]],
-            y=df_dec["Rast cen (€/mes)"],
-            name="Rast cen",
-            marker_color="#1E88E5",
-            hovertemplate="<b>%{x}</b><br>Rast cen: +€%{y:,.0f}/mes<extra></extra>",
-        ))
-        fig_dec.add_trace(go.Bar(
-            x=[o.title() for o in df_dec["obcina"]],
-            y=df_dec["Rast obresti (€/mes)"],
-            name="Dvig obresti (ECB)",
-            marker_color="#E53935",
-            hovertemplate="<b>%{x}</b><br>Dvig ECB obresti: +€%{y:,.0f}/mes<extra></extra>",
-        ))
-        fig_dec.add_trace(go.Bar(
-            x=[o.title() for o in df_dec["obcina"]],
-            y=df_dec["Interakcija (€/mes)"],
-            name="Interakcija cene+obresti",
-            marker_color="#FB8C00",
-            hovertemplate="<b>%{x}</b><br>Interakcija (hkratni dvig cen in obresti): +€%{y:,.0f}/mes<extra></extra>",
-        ))
-        fig_dec.update_layout(
-            barmode="stack",
-            title="Razdelitev rasti mesečnega obroka 2015→2024 (€/mes)",
-            xaxis_title="Občina", yaxis_title="€/mesec (rast)",
-            template="plotly_white", height=400,
-        )
-        st.plotly_chart(fig_dec, use_container_width=True)
 
 # Comparison table 2015 vs 2024
 st.subheader("Primerjalna tabela 2015 vs. 2024")

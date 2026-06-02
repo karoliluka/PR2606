@@ -8,7 +8,7 @@ st.set_page_config(
 )
 
 pg = st.navigation([
-    st.Page("home.py", title="Uvod / Opis analize", icon="🏠"),
+    st.Page("home.py", title="Uvod", icon="🏠"),
     st.Page("pages/1_Pregled.py", title="Pregled", icon="📊"),
     st.Page("pages/2_Top_obcine.py", title="Top 10 občin", icon="🏙️"),
     st.Page("pages/3_Obseg_trga.py", title="Obseg trga", icon="📈"),

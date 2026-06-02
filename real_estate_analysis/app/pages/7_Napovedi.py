@@ -1,7 +1,12 @@
+import logging
+logging.getLogger("prophet").setLevel(logging.WARNING)
+logging.getLogger("cmdstanpy").setLevel(logging.WARNING)
+
 import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+from prophet import Prophet
 
 from utils.data_loader import load_data, load_wages, load_ecb_rates, load_inflation
 
@@ -9,191 +14,225 @@ st.set_page_config(page_title="Napovedi", page_icon="🔮", layout="wide")
 
 TOP5 = ["LJUBLJANA", "MARIBOR", "CELJE", "KOPER", "KRANJ"]
 
+SCENARIJI = [
+    {
+        "ime": "Optimistični<br>(ECB pada, rast plač)",
+        "color": "#27AE60",
+        "fillcolor": "rgba(39,174,96,0.13)",
+        "ecb_2030": 1.5,
+        "wage_growth": 5.0,
+        "inflacija": 1.5,
+    },
+    {
+        "ime": "Osnovna napoved<br>(status quo)",
+        "color": "#2980B9",
+        "fillcolor": "rgba(41,128,185,0.13)",
+        "ecb_2030": 2.5,
+        "wage_growth": 3.0,
+        "inflacija": 2.0,
+    },
+    {
+        "ime": "Pesimistični<br>(recesija, stagflacija)",
+        "color": "#E74C3C",
+        "fillcolor": "rgba(231,76,60,0.13)",
+        "ecb_2030": 4.5,
+        "wage_growth": 1.0,
+        "inflacija": 5.0,
+    },
+]
+
 with st.sidebar:
     st.markdown("### 🔮 Napovedi 2026–2030")
     obcina = st.selectbox("Občina (top 5)", TOP5, index=0)
     tip = st.selectbox("Tip", ["Stanovanje", "Hiša"], index=0)
-    st.divider()
-    st.markdown("**Scenarij regresorjev 2025–2030**")
-    ecb_2030 = st.slider("ECB obrestna mera 2030 (%)", 0.5, 6.0, 2.5, step=0.25)
-    wage_growth = st.slider("Letna rast plač 2025–2030 (%)", -2.0, 8.0, 3.0, step=0.5)
-    inflacija = st.slider("Inflacija 2025–2030 (%)", 0.0, 8.0, 2.0, step=0.25)
 
 st.title("🔮 Napoved cen nepremičnin 2026–2030")
 
 st.info(
-    "**Filtri** so dostopni v levem stranskem meniju — izberite občino in tip nepremičnine, "
-    "ter nastavite scenarij regresorjev: ECB obrestno mero, letno rast plač in inflacijo za obdobje 2025–2030.",
+    "**Filtri** so dostopni v levem stranskem meniju — izberite občino in tip nepremičnine. "
+    "Graf prikazuje tri scenarije razvoja cen glede na različne makroekonomske pogoje."
 )
-
 st.warning(
     "**Opozorilo:** Napoved nepremičninskih cen je notorično težka. "
     "To so ilustracije scenarijev, **ne predikcije**. "
-    "Model je kalibriran na zgodovinskih podatkih in ne pozna bodočih šokov. "
-    "Glej omejitve spodaj.",
+    "Model je kalibriran na 10 zgodovinskih točkah in ne pozna bodočih šokov. "
+    "Glej omejitve spodaj."
 )
-
-from sklearn.linear_model import Ridge
-from sklearn.preprocessing import StandardScaler
 
 df = load_data()
 wages = load_wages()
 ecb = load_ecb_rates()
-inflation = load_inflation()
+inflation_data = load_inflation()
 
-
-@st.cache_data
-def run_forecast(obcina_key, tip_key, ecb_2030_val, wage_growth_val, inflacija_val,
-                 _df, _wages, _ecb, _inflation):
-    """Fit Ridge regression on 2015–2024 and forecast 2025–2030 with scenario regressors."""
-    sub = _df[(_df["OBCINA"] == obcina_key) & (_df["TIP"] == tip_key) & _df["LETO"].between(2015, 2024)]
-    ym = sub.groupby("LETO")["CENA_M2"].median()
-
-    hist_years = ym.index.values.astype(float)
-    hist_y = ym.values.astype(float)
-
-    X_hist = np.column_stack([
-        hist_years - 2015,
-        [_ecb.get(int(y), 0.0) for y in hist_years],
-        [_inflation.get(int(y), 2.0) for y in hist_years],
-        [_wages.get(int(y), 1500) for y in hist_years],
-    ])
-
-    scaler = StandardScaler()
-    X_hist_s = scaler.fit_transform(X_hist)
-
-    model = Ridge(alpha=1.0)
-    model.fit(X_hist_s, hist_y)
-
-    # Residual std for uncertainty bands
-    sigma = np.std(hist_y - model.predict(X_hist_s))
-
-    future_years = np.arange(2025, 2031, dtype=float)
-    ecb_future = np.linspace(_ecb.get(2025, 2.65), ecb_2030_val, len(future_years))
-    wage_2025 = _wages.get(2025, 1750)
-    wage_future = [wage_2025 * (1 + wage_growth_val / 100) ** i for i in range(len(future_years))]
-
-    X_future = np.column_stack([
-        future_years - 2015,
-        ecb_future,
-        [inflacija_val] * len(future_years),
-        wage_future,
-    ])
-    X_future_s = scaler.transform(X_future)
-    yhat = model.predict(X_future_s)
-
-    # Widen uncertainty with horizon (extrapolation penalty)
-    horizon_factor = 1 + 0.15 * np.arange(len(future_years))
-    yhat_upper = yhat + 1.28 * sigma * horizon_factor
-    yhat_lower = yhat - 1.28 * sigma * horizon_factor
-
-    future_df = pd.DataFrame({
-        "year": future_years.astype(int),
-        "ds": pd.to_datetime([f"{int(y)}-07-01" for y in future_years]),
-        "yhat": yhat,
-        "yhat_upper": yhat_upper,
-        "yhat_lower": yhat_lower,
-    })
-
-    hist_df = pd.DataFrame({
-        "ds": pd.to_datetime([f"{int(y)}-07-01" for y in hist_years]),
-        "y": hist_y,
-    })
-
-    return future_df, hist_df
-
-
-# --- Data check ---
 sub_check = df[(df["OBCINA"] == obcina) & (df["TIP"] == tip) & df["LETO"].between(2015, 2024)]
-yearly_med = sub_check.groupby("LETO")["CENA_M2"].median()
-
-if len(yearly_med) < 5:
+ym_check = sub_check.groupby("LETO")["CENA_M2"].median()
+if len(ym_check) < 5:
     st.error(f"Premalo podatkov za {obcina.title()} ({tip}) za zanesljivo napoved.")
     st.stop()
 
-# --- Run model ---
-with st.spinner("Računam napoved..."):
-    forecast, tdf = run_forecast(
-        obcina, tip, ecb_2030, wage_growth, inflacija,
-        df, wages, ecb, inflation,
+
+@st.cache_data
+def fit_prophet(obcina_key, tip_key, _df, _wages, _ecb, _inflation):
+    sub = _df[(_df["OBCINA"] == obcina_key) & (_df["TIP"] == tip_key) & _df["LETO"].between(2015, 2024)]
+    ym = sub.groupby("LETO")["CENA_M2"].median()
+
+    train = pd.DataFrame({
+        "ds": pd.to_datetime([f"{int(y)}-07-01" for y in ym.index]),
+        "y": ym.values.astype(float),
+        "ecb": [float(_ecb.get(int(y), 0.0)) for y in ym.index],
+        "inflacija": [float(_inflation.get(int(y), 2.0)) for y in ym.index],
+        "wage": [float(_wages.get(int(y), 1500)) for y in ym.index],
+    })
+
+    m = Prophet(
+        yearly_seasonality=False,
+        weekly_seasonality=False,
+        daily_seasonality=False,
+        interval_width=0.80,
+        changepoint_prior_scale=0.05,
     )
-PROPHET_OK = True
+    m.add_regressor("ecb")
+    m.add_regressor("inflacija")
+    m.add_regressor("wage")
+    m.fit(train)
+    return m, train
 
-# --- Forecast chart ---
-# Bridge the last historical point into the forecast so lines connect visually
-last_ds = tdf["ds"].iloc[-1]
-last_y = tdf["y"].iloc[-1]
 
-fc_ds = pd.concat([pd.Series([last_ds]), forecast["ds"]], ignore_index=True)
-fc_yhat = pd.concat([pd.Series([last_y]), forecast["yhat"]], ignore_index=True)
-fc_upper = pd.concat([pd.Series([last_y]), forecast["yhat_upper"]], ignore_index=True)
-fc_lower = pd.concat([pd.Series([last_y]), forecast["yhat_lower"]], ignore_index=True)
+def make_forecast(model, sc, _ecb, _wages):
+    future_years = list(range(2025, 2031))
+    ecb_vals = np.linspace(_ecb.get(2025, 2.65), sc["ecb_2030"], len(future_years))
+    wage_start = float(_wages.get(2025, 1750))
+    wage_vals = [wage_start * (1 + sc["wage_growth"] / 100) ** i for i in range(len(future_years))]
+
+    future = pd.DataFrame({
+        "ds": pd.to_datetime([f"{y}-07-01" for y in future_years]),
+        "ecb": ecb_vals,
+        "inflacija": [float(sc["inflacija"])] * len(future_years),
+        "wage": wage_vals,
+    })
+    fc = model.predict(future)
+    fc["year"] = future_years
+    return fc[["year", "ds", "yhat", "yhat_lower", "yhat_upper"]]
+
+
+with st.spinner("Treniram Prophet model…"):
+    prophet_model, train_df = fit_prophet(obcina, tip, df, wages, ecb, inflation_data)
+
+forecasts = [make_forecast(prophet_model, sc, ecb, wages) for sc in SCENARIJI]
+
+last_ds = train_df["ds"].iloc[-1]
+last_y = float(train_df["y"].iloc[-1])
 
 fig = go.Figure()
 
-fig.add_trace(go.Scatter(
-    x=pd.concat([fc_ds, fc_ds.iloc[::-1]]),
-    y=pd.concat([fc_upper, fc_lower.iloc[::-1]]),
-    fill="toself",
-    fillcolor="rgba(229,57,53,0.12)",
-    line=dict(color="rgba(0,0,0,0)"),
-    name="80% interval zaupanja",
-    hoverinfo="skip",
-))
+for sc, fc in zip(SCENARIJI, forecasts):
+    fc_main = fc[fc["year"] >= 2026].reset_index(drop=True)
 
+    # Confidence band (2024 anchor → 2030)
+    band_ds = pd.concat([pd.Series([last_ds]), fc_main["ds"]], ignore_index=True)
+    band_upper = pd.concat([pd.Series([last_y]), fc_main["yhat_upper"]], ignore_index=True)
+    band_lower = pd.concat([pd.Series([last_y]), fc_main["yhat_lower"]], ignore_index=True)
+
+    fig.add_trace(go.Scatter(
+        x=pd.concat([band_ds, band_ds.iloc[::-1].reset_index(drop=True)]),
+        y=pd.concat([band_upper, band_lower.iloc[::-1].reset_index(drop=True)]),
+        fill="toself",
+        fillcolor=sc["fillcolor"],
+        line=dict(color="rgba(0,0,0,0)"),
+        showlegend=False,
+        hoverinfo="skip",
+    ))
+
+    # Dashed bridge: 2024 → 2025
+    fc_2025 = fc[fc["year"] == 2025]
+    if not fc_2025.empty:
+        fig.add_trace(go.Scatter(
+            x=[last_ds, fc_2025["ds"].iloc[0]],
+            y=[last_y, float(fc_2025["yhat"].iloc[0])],
+            mode="lines",
+            line=dict(color=sc["color"], width=2, dash="dash"),
+            showlegend=False,
+            hoverinfo="skip",
+        ))
+
+    # Forecast line 2026–2030
+    line_ds = pd.concat([pd.Series([last_ds]), fc_main["ds"]], ignore_index=True)
+    line_y = pd.concat([pd.Series([last_y]), fc_main["yhat"]], ignore_index=True)
+
+    fig.add_trace(go.Scatter(
+        x=line_ds,
+        y=line_y,
+        mode="lines+markers",
+        line=dict(color=sc["color"], width=2.5),
+        marker=dict(size=8, symbol="square"),
+        name=sc["ime"],
+        hovertemplate=sc["ime"].replace("<br>", " ") + "<br>Leto: %{x|%Y}<br>€/m²: %{y:,.0f}<extra></extra>",
+    ))
+
+# Historical data (drawn last = on top)
 fig.add_trace(go.Scatter(
-    x=tdf["ds"], y=tdf["y"],
-    name="Dejanske cene", mode="lines+markers",
-    line=dict(color="#1f3a5f", width=3),
-    marker=dict(size=8),
+    x=train_df["ds"],
+    y=train_df["y"],
+    mode="lines+markers",
+    line=dict(color="#111111", width=3),
+    marker=dict(size=9, symbol="circle"),
+    name="Dejanska mediana (stanovanja)",
     hovertemplate="Dejanska cena<br>Leto: %{x|%Y}<br>€/m²: %{y:,.0f}<extra></extra>",
 ))
 
-fig.add_trace(go.Scatter(
-    x=fc_ds, y=fc_yhat,
-    name=f"Napoved (ECB→{ecb_2030}%, plače+{wage_growth}%/leto, inflacija {inflacija}%)",
-    line=dict(color="#E53935", width=3, dash="dash"),
-    mode="lines+markers",
-    marker=dict(size=7),
-    hovertemplate="Napoved<br>Leto: %{x|%Y}<br>€/m²: %{y:,.0f}<extra></extra>",
-))
-
-val_2030 = forecast[forecast["year"] == 2030]["yhat"].values
-if len(val_2030):
-    fig.add_annotation(
-        x=forecast[forecast["year"] == 2030]["ds"].values[0],
-        y=val_2030[0],
-        text=f"2030: €{val_2030[0]:,.0f}/m²",
-        showarrow=True, arrowhead=2,
-        bgcolor="rgba(255,255,255,0.9)",
-        bordercolor="#E53935", borderwidth=1,
-        font=dict(color="#E53935", size=12),
-    )
+# Vertical dotted line at 2025
+fig.add_vline(x="2025-01-01", line_dash="dot", line_color="#888", line_width=1.5)
+fig.add_annotation(
+    x="2025-04-01", y=0.04,
+    xref="x", yref="paper",
+    text="napoved →",
+    showarrow=False,
+    font=dict(size=11, color="#888"),
+    xanchor="left",
+)
 
 fig.update_layout(
-    title=f"Napoved cen — {obcina.title()}, {tip}, 2026–2030",
-    xaxis_title="Leto", yaxis_title="€/m²",
-    template="plotly_white", height=500,
-    legend=dict(orientation="h", y=-0.2),
+    title=dict(
+        text=(
+            f"Napoved mediane cen/m² za {tip.lower()} — 3 scenariji (2026–2030)<br>"
+            "<sup>Model: Prophet + regresiji (ECB, inflacija, plača)</sup>"
+        ),
+        font=dict(size=16),
+    ),
+    xaxis_title="Leto",
+    yaxis_title="Mediana €/m²",
+    template="plotly_white",
+    height=560,
+    legend=dict(
+        orientation="v", x=0.01, y=0.99,
+        xanchor="left", yanchor="top",
+        bgcolor="rgba(255,255,255,0.92)",
+        bordercolor="#ccc", borderwidth=1,
+    ),
     hovermode="x unified",
+    yaxis=dict(tickformat=",.0f €"),
+    margin=dict(b=60),
 )
+
 st.plotly_chart(fig, use_container_width=True)
 
-future_table = forecast[forecast["year"] >= 2026][
-    ["year", "yhat", "yhat_lower", "yhat_upper"]
-].copy()
-future_table = future_table.rename(columns={
-    "year": "Leto",
-    "yhat": "Napoved €/m²",
-    "yhat_lower": "Spodnja meja (80%)",
-    "yhat_upper": "Zgornja meja (80%)",
-})
-future_table[["Napoved €/m²", "Spodnja meja (80%)", "Zgornja meja (80%)"]] = (
-    future_table[["Napoved €/m²", "Spodnja meja (80%)", "Zgornja meja (80%)"]].round(0).astype(int)
+st.caption(
+    "△ Omejitev: 10 učnih točk, visoko tveganje prenaučenosti. Napovedi so ilustrativne.  \n"
+    "Interval zaupanja: 80 %. Vir: GURS ETN | SURS (plače) | Eurostat (inflacija) | ECB SDW"
 )
-st.dataframe(future_table, use_container_width=True, hide_index=True)
 
-# --- Limitations ---
+# Summary table
+st.divider()
+st.subheader("📋 Napovedi po scenarijih (2026–2030)")
+
+table_rows = {"Leto": list(range(2026, 2031))}
+for sc, fc in zip(SCENARIJI, forecasts):
+    fc_main = fc[fc["year"] >= 2026]
+    label = sc["ime"].replace("<br>", " ")
+    table_rows[label] = [f"€ {v:,.0f}" for v in fc_main["yhat"]]
+
+st.dataframe(pd.DataFrame(table_rows), use_container_width=True, hide_index=True)
+
 st.divider()
 st.subheader("⚠️ Omejitve modela")
 st.markdown("""
@@ -201,7 +240,7 @@ st.markdown("""
 - **Model predpostavlja, da bodo regresijski vplivi v prihodnosti podobni preteklim** — to je v turbulentnem obdobju vprašljivo.
 - **Manjše občine imajo manjše vzorce in višjo variabilnost** — zato je napoved omejena na top 5 občin.
 - **Letni podatki** (ne mesečni) omejujejo sezonsko analizo.
-- Model je treniran na 2015–2024 (~9 podatkovnih točk) — visoka negotovost pri daljših horizontih.
+- Model je treniran na 2015–2024 (~10 podatkovnih točk) — visoka negotovost pri daljših horizontih.
 """)
 
 with st.expander("📋 Viri"):

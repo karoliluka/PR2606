@@ -51,8 +51,7 @@ with st.sidebar:
     leto_range = st.slider("Leto (od–do)", 2015, 2024, (2022, 2024))
     tip_sel = st.radio("Tip nepremičnine", ["Stanovanje", "Hiša", "Obe"], index=0)
     hex_size = st.slider("Hex velikost (m)", 50, 500, 150, step=25)
-
-min_count = 1
+    min_count = st.slider("Min. poslov v hexu", 1, 20, 1, step=1)
 
 st.title("🗺️ Geografija cen nepremičnin — hexbin")
 
