@@ -1,4 +1,4 @@
-# Analiza slovenskega trga stanovanjskih nepremičnin 2015–2025
+# Analiza slovenskega nepremičninskega trga (2015–2025)
 
 **Predmet:** Podatkovno rudarjenje
 **Letnik:** 2025/26, FRI Ljubljana
